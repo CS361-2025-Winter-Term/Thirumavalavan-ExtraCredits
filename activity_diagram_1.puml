@@ -1,0 +1,78 @@
+@startuml Activity Diagram - User Profile Creation and Management
+
+|NotificationPreferences|
+|UserProfile|
+|LoginView|
+start
+:Receive registration button click;
+:readUsernameTextbox();
+:readPasswordTextbox();
+:readEmailTextbox();
+:readNotificationPreferences();
+:Create NotificationPreferences object;
+|NotificationPreferences|
+:NotificationPreferences(frequency: NotificationFrequency, isEnabled: bool);
+|LoginView|
+:Create UserProfile object;
+|UserProfile|
+:UserProfile(username: string, email: string, notificationPreferences: NotificationPreferences);
+
+|LoginView|
+:registerUser(userProfile: UserProfile, password: string);
+
+|AuthenticationManager|
+:validateUsername(username: string);
+if () then ([invalid username])
+|LoginView|
+    :displayError("Username must use only letters");
+    stop
+else ([valid username])
+endif
+
+|AuthenticationManager|
+:validatePassword(password: string);
+if () then ([invalid password])
+|LoginView|
+    :displayError("Password must be at least 8 characters long");
+    stop
+else ([valid password])
+endif
+
+|AuthenticationManager|
+:hashPassword(password: string);
+:store hashedPassword;
+:validateEmail(email: string);
+if () then ([invalid email])
+|LoginView|
+    :displayError("Invalid email address");
+    stop
+else ([valid email])
+endif
+
+|AuthenticationManager|
+:findUserByUsername(username: string);
+if () then ([user found])
+|AuthenticationManager|
+    :Return RegistrationStatus.USER_ALREADY_EXISTS;
+|LoginView|
+    :displayError("Username already exists");
+    stop
+else ([user not found])
+endif
+
+|UserStorageManager|
+:saveUserToDatabase(userProfile: UserProfile, hashedPassword: string);
+|AuthenticationManager|
+if () then ([save successful])
+    :Return RegistrationStatus.SUCCESS;
+|LoginView|
+    :transitionToHomeView(userProfile: UserProfile);
+    stop
+else ([save unsuccessful])
+    :Return RegistrationStatus.UNKNOWN_ERROR;
+|LoginView|
+    :displayError("Registration failed. Internal error");
+    stop
+endif
+
+@enduml
