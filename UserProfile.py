@@ -1,5 +1,3 @@
-# UserProfile.py
-
 from NotificationPreferences import NotificationPreferences
 
 class UserProfile:
